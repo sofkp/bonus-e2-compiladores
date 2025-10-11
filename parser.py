@@ -51,15 +51,6 @@ def gramatica(filename):
 def first(regla, nterminal, terminal):
     first = set()   
     for nt in nterminal: first.add(nt)
-    c = True #bool para indicar si cambio o no
-    while c:
-        c = False
-        for left, right in regla:
-            if len(right) == 0:
-                if "''" not in first[right]:
-                    first[right].add("''")
-                    c = True
-                continue
-            epsilon = True
+    
             
 
