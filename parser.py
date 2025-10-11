@@ -6,6 +6,13 @@ class lr1:
         self.action_table = {} # [state][terminal-no terminal] = acción/regla
         self.got_to = {} #[state][no terminal] = estado destino
 
+class item:
+    def __init__(self, left, right, dot, lookahead):
+        self.left = left
+        self.right = tuple(right)
+        self.dot = dot
+        self.la = lookahead
+
 
 def gramatica(filename):
     regla = [] #reglas
@@ -48,9 +55,45 @@ def gramatica(filename):
     return regla, nterminal, sorted(list(terminal))
 
 #calcular FIRST 
-def first(regla, nterminal, terminal):
-    first = set()   
-    for nt in nterminal: first.add(nt)
-    
-            
+def first_compute(regla, nterminal, terminal):
+    first = {nt: set() for nt in nterminal}   #inicializar sets vacios para los no terminarles
+    for t in terminal: first.setdefault(t,set()).add(t) #inicializar sets vacios para los terminales
+    c = True #flag para repetir hasta que no haya cambios 
+    while c:
+        c = False
+        for left, right in regla:
+            if len(right) == 0: # regla 1: si la produccion tiene epsilon, se agrega a los first
+                if "''" not in first[right]:
+                    first[right].add("''")
+                    c = True
+                continue
+            allEpsilon = True #se supone que todas las producciones tienen epsiol
+            for s in right:
+                if s in nterminal:  #regla 2: symbol es no terminal, se agrega el first de este
+                    before = len(first[left])
+                    agregar = [] #los terminales de la variable 
+                    for i in first[s]:
+                        if i != "''" : agregar.append(i) #agregar todos menos epsilon
+                    first[left].update(agregar) #agregar los terminales
+                    if len(first[left]) != before:
+                        c = True
+                    
+                    if "''" in first[s]: #si first de la variable contiene epsilon, se evalua el siguiente simbolo
+                        continue 
+                    else:
+                        allEpsilon = False
+                        break
+                    
+                else:
+                    # regla 1: agregar todos los terminarles
+                    if s not in first[left]:
+                        first[left].add(s)
+                        c = True
+                    allEpsilon = False
+                    break
+            if allEpsilon: #si todos los simbolos producen epsilon, se agrega epsilon al first de la variable
+                if "''" not in first[left]:
+                    first[left.add("''")]
+                    c = True
 
+    return first                
