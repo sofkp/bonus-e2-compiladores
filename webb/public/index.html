@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> 🌸 LR(1) Parser</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header con título -->
+  <header id="main-header">
+    <h1>🌸 LR(1) Parser</h1>
+    <!-- Popup de notificación -->
+    <div id="notification-popup" class="notification-hidden">
+      <div class="notification-content">
+        <button class="close-btn">×</button>
+        <p id="popup-message">Esperando acción... 🌸</p>
+      </div>
+    </div>
+  </header>
+
+  <div id="main-container">
+    <!-- Panel izquierdo con tabs -->
+    <div id="left-panel">
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-tab="grammar">Gramática</button>
+          <button class="tab-btn" data-tab="parse" id="parse-tab-btn" style="display: none;">Parsear Cadena</button>
+        </div>
+        
+        <div class="tab-content">
+          <div id="grammar-tab" class="tab-pane active">
+            <div class="section">
+              <h2>Ingresa tu gramática LR(1)</h2>
+              <textarea id="grammarInput" placeholder="E -> E + T | T&#10;T -> T * F | F&#10;F -> ( E ) | id"></textarea>
+            </div>
+            <button id="btnGenerarTablas">Generar Tablas LR(1)</button>
+          </div>
+          
+          <div id="parse-tab" class="tab-pane">
+            <div class="section">
+              <h2>Cadena a analizar</h2>
+              <textarea id="inputCadena" placeholder="id + id * id"></textarea>
+            </div>
+            <button id="btnParsear">Parsear Cadena</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel derecho con tabs -->
+    <div id="right-panel">
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-tab="tables">Tablas ACTION/GOTO</button>
+          <button class="tab-btn" data-tab="trace" id="trace-tab-btn" style="display: none;">Traza</button>
+        </div>
+        
+        <div class="tab-content">
+          <div id="tables-tab" class="tab-pane active">
+            <div class="view-toggle">
+              <button class="toggle-btn active" data-view="table">Tabla</button>
+              <button class="toggle-btn" data-view="diagram">Diagrama DFA</button>
+            </div>
+            
+            <div id="action-goto-container" class="table-container">
+              <div class="table-title">ACTION & GOTO TABLE</div>
+              <div id="combined-table-wrapper">
+                <table id="combined-table" class="lr-table"></table>
+              </div>
+            </div>
+            
+            <div id="dfa-diagram-container" class="diagram-container" style="display: none;">
+              <div class="table-title">DIAGRAMA DFA LR(1)</div>
+              <div id="dfa-diagram-wrapper">
+                <div id="dfa-diagram" class="dfa-diagram">
+                  <p style="text-align: center; color: #7b52ab; padding: 40px;">
+                    Genera las tablas LR(1) para ver el diagrama DFA aquí 🌸
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="trace-tab" class="tab-pane">
+            <div id="trace-container" class="table-container">
+              <div class="table-title">TRACE</div>
+              <div id="trace-table-wrapper">
+                <table id="current-trace-table" class="trace-table"></table>
+              </div>
+              <div class="trace-navigation">
+                <button id="prev-trace" class="nav-btn">‹</button>
+                <span id="trace-counter">1/1</span>
+                <button id="next-trace" class="nav-btn">›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

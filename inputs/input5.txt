@@ -1,0 +1,3 @@
+D -> T VL
+T -> int | float 
+VL -> id , VL | id 

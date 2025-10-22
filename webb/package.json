@@ -1,0 +1,14 @@
+{
+  "name": "lr1-parser-web",
+  "version": "1.0.0",
+  "description": "LR(1) Parser con interfaz web cute",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
