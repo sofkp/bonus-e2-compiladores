@@ -1,15 +1,15 @@
-#!/usr/bin/env python3
 import sys
 import json
+import os
 from lr1_parser import grammar, first_compute, dfa, action_table_prod, parser, get_dfa_data
 
 def generate_tables(grammar_text):
     """Genera las tablas ACTION y GOTO a partir de la gramática"""
-    # Guardar gramática temporalmente
-    with open("temp_grammar.txt", "w") as f:
-        f.write(grammar_text)
-    
+    # Guardar gramática temporalmente con codificación UTF-8
     try:
+        with open("temp_grammar.txt", "w", encoding="utf-8") as f:
+            f.write(grammar_text)
+        
         rules, nonterminals, terminals = grammar("temp_grammar.txt")
         first = first_compute(rules, nonterminals, terminals)
         C, augmented_rules, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
@@ -50,14 +50,18 @@ def generate_tables(grammar_text):
         
     except Exception as e:
         return {"error": str(e)}
+    finally:
+        # Limpiar archivo temporal
+        if os.path.exists("temp_grammar.txt"):
+            os.remove("temp_grammar.txt")
 
 def parse_string(grammar_text, input_string):
     """Parsea una cadena usando las tablas LR(1)"""
-    # Guardar gramática temporalmente
-    with open("temp_grammar.txt", "w") as f:
-        f.write(grammar_text)
-    
     try:
+        # Guardar gramática temporalmente con codificación UTF-8
+        with open("temp_grammar.txt", "w", encoding="utf-8") as f:
+            f.write(grammar_text)
+        
         rules, nonterminals, terminals = grammar("temp_grammar.txt")
         first = first_compute(rules, nonterminals, terminals)
         C, augmented_rules, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
@@ -85,6 +89,10 @@ def parse_string(grammar_text, input_string):
         }
     except Exception as e:
         return {"error": str(e)}
+    finally:
+        # Limpiar archivo temporal
+        if os.path.exists("temp_grammar.txt"):
+            os.remove("temp_grammar.txt")
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -94,12 +102,15 @@ if __name__ == "__main__":
     command = sys.argv[1]
     grammar_text = sys.argv[2]
     
-    if command == "tables":
-        result = generate_tables(grammar_text)
-        print(json.dumps(result))
-    elif command == "parse":
-        input_string = sys.argv[3] if len(sys.argv) > 3 else ""
-        result = parse_string(grammar_text, input_string)
-        print(json.dumps(result))
-    else:
-        print(json.dumps({"error": "Comando no válido"}))
+    try:
+        if command == "tables":
+            result = generate_tables(grammar_text)
+            print(json.dumps(result))
+        elif command == "parse":
+            input_string = sys.argv[3] if len(sys.argv) > 3 else ""
+            result = parse_string(grammar_text, input_string)
+            print(json.dumps(result))
+        else:
+            print(json.dumps({"error": "Comando no válido"}))
+    except Exception as e:
+        print(json.dumps({"error": f"Error ejecutando comando: {str(e)}"}))

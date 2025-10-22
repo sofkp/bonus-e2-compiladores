@@ -65,7 +65,7 @@ body {
 
 #main-header h1 {
   font-family: 'Pacifico', cursive;
-  font-size: 2.5rem;
+  font-size: 2rem;
   color: #7b52ab;
   margin: 0;
   background: linear-gradient(135deg, #7b52ab, #ec407a);
@@ -102,11 +102,80 @@ body {
 #right-panel {
   width: 70%;
   flex-grow: 1;
-  overflow-y: auto;
-  overflow-x: auto;
   padding: 20px;
   box-sizing: border-box;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  overflow-y: auto; 
+}
+
+
+#right-panel .tab-pane {
+  display: none;
+}
+
+#right-panel .tab-pane.active {
+  display: block;
+}
+
+
+.table-container, .diagram-container {
+  position: relative;
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(123, 82, 171, 0.1);
+  border-right: 2px solid var(--purple-light);
+  border-left: 2px solid var(--purple-light);
+  border-bottom: 2px solid var(--purple-light);
+  margin-bottom: 15px;
+  min-height: 200px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+.scrollable-content {
+  flex: 1;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  margin-top: 10px;
+  background: white;
+  overflow: visible; 
+}
+
+.dfa-diagram {
+  width: 100%;
+  height: 100%;
+  background: #fafafa;
+  border-radius: 8px;
+  position: relative;
+  min-width: 800px;
+  min-height: 500px;
+}
+
+#right-panel::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+#right-panel::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+}
+
+#right-panel::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #e6c2f2, #d2a9e3);
+  border-radius: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+#right-panel::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #d2a9e3, #c197d2);
 }
 
 .section {
@@ -139,7 +208,7 @@ textarea {
 }
 
 button {
-  background: linear-gradient(135deg, #e6c2f2, #d2a9e3);
+  background: #c390d9;
   border: none;
   border-radius: 10px;
   padding: 10px 15px;
@@ -152,38 +221,18 @@ button {
   margin: 5px 0;
 }
 
-.table-container, .diagram-container {
-  position: relative;
-  background: white;
-  padding: 15px;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(123, 82, 171, 0.1);
-  border: 2px solid var(--purple-light);
-  margin-bottom: 15px;
-  min-height: 200px;
-}
-
 .table-title {
-  background: linear-gradient(135deg, #7b52ab, #9c67c5);
+  background: #6a1b9a;
   color: white;
   padding: 12px;
   text-align: center;
   font-size: 16px;
   font-weight: bold;
-  border-radius: 10px 10px 0 0;
   margin: -15px -15px 15px -15px;
   position: relative;
   z-index: 20;
   box-shadow: 0 2px 4px rgba(123, 82, 171, 0.2);
-}
-
-.scrollable-content {
-  overflow: auto;
-  max-height: 500px;
-  border: 1px solid #e1c9f4;
-  border-radius: 8px;
-  margin-top: 10px;
-  background: white;
+  border-radius: 12px 12px 0 0;
 }
 
 .lr-table {
@@ -194,10 +243,10 @@ button {
 }
 
 .lr-table th {
-  background: linear-gradient(135deg, #f3e0fa, #e1bee7);
-  color: #7b52ab;
+  background: #d3b6f2;
+  color: #2c3e50;
   padding: 10px 8px;
-  border: 1px solid #d2a9e3;
+  border: 1px solid #6a1b9a;
   font-weight: 600;
   text-align: center;
   position: sticky;
@@ -248,15 +297,15 @@ button {
 .trace-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 11px;
-  min-width: 800px;
+  font-size: 12px;
+  min-width: 600px;
 }
 
 .trace-table th {
-  background: linear-gradient(135deg, #a9cce3, #85c1e9);
+  background: #d3b6f2;
   color: #2c3e50;
   padding: 10px 8px;
-  border: 1px solid #a9cce3;
+  border: 1px solid #6a1b9a;
   font-weight: 600;
   text-align: center;
   position: sticky;
@@ -266,17 +315,18 @@ button {
 
 .trace-table td {
   padding: 8px 6px;
-  border: 1px solid #d6eaf8;
+  border: 1px solid #e1c9f4;
   text-align: center;
   background: white;
+  transition: background-color 0.2s ease;
 }
 
 .trace-table tr:nth-child(even) {
-  background-color: #f8fdff;
+  background-color: #fcfaff;
 }
 
 .trace-table tr:hover {
-  background-color: #ebf5fb;
+  background-color: #f3e0fa;
 }
 
 .trace-navigation {
@@ -288,6 +338,12 @@ button {
   width: 100%;
 }
 
+.trace-table .action-cell {
+  font-weight: bold;
+  color: var(--purple-dark);
+}
+
+
 .nav-btn {
   width: 35px !important;
   height: 35px;
@@ -296,7 +352,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #a9cce3, #85c1e9) !important;
+  background-color: #e1bee7 !important;
   border-radius: 6px !important;
   margin: 0 !important;
 }
@@ -311,9 +367,10 @@ button {
   box-shadow: 0 8px 25px rgba(123, 82, 171, 0.3);
   border: 2px solid #e1bee7;
   padding: 0;
-  min-width: 300px;
+  max-height: 250px;
+  min-width: 200px;
   max-width: 400px;
-  z-index: 1001;
+  z-index: 300;
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   opacity: 0;
   visibility: hidden;
@@ -332,7 +389,7 @@ button {
 }
 
 .notification-content {
-  padding: 20px;
+  padding: 10px;
   position: relative;
 }
 
@@ -368,25 +425,43 @@ button {
   flex-direction: column;
 }
 
+.tab-containerr {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
 .tab-buttons {
   display: flex;
   background: #f8f0ff;
   border-radius: 12px 12px 0 0;
-  padding: 8px;
+  padding: 6px;
   gap: 5px;
-  border-bottom: 2px solid #e1bee7;
+  border-bottom: 2px solid;
+}
+
+.tab-buttonss {
+  display: flex;
+  background: #f8f0ff;
+  border-radius: 12px 12px 0 0;
+  padding: 6px;
+  border-top: 2px solid var(--purple-light);
+  border-right: 2px solid var(--purple-light);
+  border-left: 2px solid var(--purple-light);
 }
 
 .tab-btn {
-  background: transparent !important;
-  border: 2px solid transparent !important;
-  border-radius: 8px !important;
-  padding: 10px 20px !important;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 15px !important;
+  cursor: pointer;
+  color: white;
+  margin: 5px 0 !important;
   font-size: 14px !important;
-  color: #7b52ab !important;
   transition: all 0.3s ease !important;
   width: auto !important;
-  margin: 0 !important;
 }
 
 .tab-btn:hover {
@@ -439,33 +514,26 @@ button {
 }
 
 .view-toggle-container {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  z-index: 25;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
 .view-toggle {
   display: flex;
-  background: #f3e0fa;
-  border-radius: 20px;
-  padding: 4px;
-  gap: 2px;
-  box-shadow: 0 2px 8px rgba(123, 82, 171, 0.2);
-  border: 1px solid #e1bee7;
+  background: transparent;
+  gap: 8px;
 }
 
 .toggle-btn {
   background: transparent !important;
-  border: none !important;
-  border-radius: 16px !important;
-  padding: 6px 12px !important;
-  font-size: 11px !important;
-  color: #7b52ab !important;
-  transition: all 0.3s ease !important;
-  width: auto !important;
-  margin: 0 !important;
+  border: 2px solid #b48fd9;
+  color: #6b3fa0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
   font-weight: 500;
+  transition: 0.2s;
 }
 
 .toggle-btn:hover {
@@ -475,20 +543,8 @@ button {
 }
 
 .toggle-btn.active {
-  background: linear-gradient(135deg, #e6c2f2, #d2a9e3) !important;
-  color: white !important;
+  background-color: #d3b6f2;
   box-shadow: 0 2px 4px rgba(123, 82, 171, 0.3);
-}
-
-.dfa-diagram {
-  width: 100%;
-  height: 500px;
-  background: #fafafa;
-  border-radius: 8px;
-  position: relative;
-  overflow: auto;
-  min-width: 800px;
-  min-height: 500px;
 }
 
 .dfa-node {
@@ -590,41 +646,6 @@ button {
   width: auto !important;
 }
 
-#right-panel::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-}
-
-#right-panel::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 6px;
-}
-
-#right-panel::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #e6c2f2, #d2a9e3);
-  border-radius: 6px;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-}
-
-#right-panel::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #d2a9e3, #c197d2);
-}
-
-.scrollable-content::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.scrollable-content::-webkit-scrollbar-track {
-  background: rgba(248, 240, 255, 0.5);
-  border-radius: 4px;
-}
-
-.scrollable-content::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #d2a9e3, #c197d2);
-  border-radius: 4px;
-}
-
 .tab-pane {
   transition: opacity 0.3s ease;
 }
@@ -641,6 +662,30 @@ button {
 .tab-pane.active {
   opacity: 1;
   display: flex;
+}
+
+#action-goto-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+#dfa-diagram-container {
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+#combined-table {
+  width: auto;
+  min-width: 100%;
+}
+
+#trace-container {
+  overflow: visible;
+}
+
+.dfa-diagram {
+  min-width: 800px;
+  width: auto;
 }
 
 @media (max-width: 768px) {
@@ -667,4 +712,121 @@ button {
     min-width: 600px;
     min-height: 400px;
   }
+}
+
+#content-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  overflow: hidden;
+}
+
+.content-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  background: transparent;
+}
+
+.content-view.active {
+  display: block;
+}
+
+#right-panel .tab-pane.active:empty::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-radius: 15px;
+  border: 2px dashed var(--purple-light);
+  opacity: 0.4;
+}
+
+.view-toggle {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 30;
+}
+
+.view-switch {
+  display: none;
+}
+
+.switch-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-right: 10px;
+}
+
+.switch-label {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  background-color: #e1bee7;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: 2px solid #b48fd9;
+}
+
+.switch-label .switch-inner {
+  display: none;
+}
+
+.switch-label .switch-handle {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.view-switch:checked + .switch-label {
+  background-color: #c390d9;
+}
+
+.view-switch:checked + .switch-label .switch-handle {
+  left: 26px;
+}
+
+.switch-text {
+  font-size: 12px;
+  color: white;
+  display: flex;
+  gap: 4px;
+}
+
+.table-label {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.diagram-label {
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.view-switch:checked ~ .switch-text .table-label {
+  opacity: 0.4;
+}
+
+.view-switch:checked ~ .switch-text .diagram-label {
+  opacity: 1;
 }

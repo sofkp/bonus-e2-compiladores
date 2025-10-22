@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const traceTabBtn = document.getElementById("trace-tab-btn");
   
   const toggleBtns = document.querySelectorAll('.toggle-btn');
+  const viewSwitch = document.getElementById('viewSwitch');
   
   const actionGotoContainer = document.getElementById("action-goto-container");
   const dfaDiagramContainer = document.getElementById("dfa-diagram-container");
@@ -29,28 +30,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initializeApp() {
     updateNotification("Esperando acción... 🌸", "waiting");
-    
     showEmptyTables();
     showEmptyDiagram();
     showEmptyTrace();
-    
     setupTraceNavigation();
     setupNotificationClose();
     setupLeftTabs();
     setupRightTabs();
     setupViewToggle();
+    setupSwitchToggle();
   }
 
   function setupLeftTabs() {
     leftTabBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const tabId = btn.getAttribute('data-tab');
-        
         leftTabBtns.forEach(b => b.classList.remove('active'));
         document.querySelectorAll('#left-panel .tab-pane').forEach(pane => pane.classList.remove('active'));
-        
         btn.classList.add('active');
-        document.getElementById(`${tabId}-tab`).classList.add('active');
+        const tabPane = document.getElementById(`${tabId}-tab`);
+        if (tabPane) tabPane.classList.add('active');
       });
     });
   }
@@ -59,12 +58,29 @@ document.addEventListener("DOMContentLoaded", () => {
     rightTabBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const tabId = btn.getAttribute('data-tab');
-        
+
         rightTabBtns.forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('#right-panel .tab-pane').forEach(pane => pane.classList.remove('active'));
-        
+
+        const rightViews = [
+          actionGotoContainer,
+          dfaDiagramContainer,
+          traceContainer
+        ];
+        rightViews.forEach(v => {
+          if (v) v.style.display = 'none';
+        });
+
         btn.classList.add('active');
-        document.getElementById(`${tabId}-tab`).classList.add('active');
+
+        if (tabId === 'tables') {
+          if (viewSwitch && viewSwitch.checked) {
+            if (dfaDiagramContainer) dfaDiagramContainer.style.display = 'block';
+          } else {
+            if (actionGotoContainer) actionGotoContainer.style.display = 'block';
+          }
+        } else if (tabId === 'trace') {
+          if (traceContainer) traceContainer.style.display = 'block';
+        }
       });
     });
   }
@@ -73,10 +89,11 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const view = btn.getAttribute('data-view');
-        
         toggleBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        
+
+        if (!actionGotoContainer || !dfaDiagramContainer) return; 
+
         if (view === 'table') {
           actionGotoContainer.style.display = 'block';
           dfaDiagramContainer.style.display = 'none';
@@ -93,7 +110,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function setupSwitchToggle() {
+    if (!viewSwitch || !actionGotoContainer || !dfaDiagramContainer) return; 
+    viewSwitch.addEventListener('change', function() {
+      if (this.checked) {
+        actionGotoContainer.style.display = 'none';
+        dfaDiagramContainer.style.display = 'block';
+        if (currentTablesData && currentTablesData.dfa) {
+          createVisualDFADiagram(currentTablesData.dfa);
+        } else {
+          showEmptyDiagram();
+        }
+      } else {
+        dfaDiagramContainer.style.display = 'none';
+        actionGotoContainer.style.display = 'block';
+      }
+    });
+  }
+
+
   function showEmptyTables() {
+    if (!combinedTable) return;
     combinedTable.innerHTML = `
       <thead>
         <tr>
@@ -115,6 +152,23 @@ document.addEventListener("DOMContentLoaded", () => {
       </tbody>
     `;
   }
+
+  function setupTraceNavigation() {
+    if (!prevTraceBtn || !nextTraceBtn || !traceCounter) return;
+    prevTraceBtn.addEventListener("click", () => {
+      if (currentTraceIndex > 0) {
+        currentTraceIndex--;
+        showCurrentTrace();
+      }
+    });
+    nextTraceBtn.addEventListener("click", () => {
+      if (currentTraceIndex < allTraces.length - 1) {
+        currentTraceIndex++;
+        showCurrentTrace();
+      }
+    });
+  }
+
 
   function showEmptyDiagram() {
     dfaDiagram.innerHTML = `
@@ -151,7 +205,6 @@ document.addEventListener("DOMContentLoaded", () => {
         showCurrentTrace();
       }
     });
-
     nextTraceBtn.addEventListener("click", () => {
       if (currentTraceIndex < allTraces.length - 1) {
         currentTraceIndex++;
@@ -163,10 +216,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateNotification(message, type = "waiting") {
     const popup = document.getElementById("notification-popup");
     const popupMessage = document.getElementById("popup-message");
-    
     popup.classList.remove("notification-visible", "notification-slide-in");
     popup.classList.add("notification-slide-out");
-    
     setTimeout(() => {
       popupMessage.textContent = message;
       popup.className = "notification-popup-" + type;
@@ -178,11 +229,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function setupNotificationClose() {
     const closeBtn = document.querySelector(".close-btn");
     const popup = document.getElementById("notification-popup");
-    
     closeBtn.addEventListener("click", () => {
       popup.classList.remove("notification-visible", "notification-slide-in");
       popup.classList.add("notification-slide-out");
-      
       setTimeout(() => {
         popup.classList.add("notification-hidden");
       }, 300);
@@ -195,7 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (popup.classList.contains("notification-visible")) {
         popup.classList.remove("notification-visible", "notification-slide-in");
         popup.classList.add("notification-slide-out");
-        
         setTimeout(() => {
           popup.classList.add("notification-hidden");
         }, 300);
@@ -242,8 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
       
     } catch (error) {
       console.error("Error:", error);
-      updateNotification(`❌ Error: ${error.message}`, "error");
-      autoHideNotification();
     }
   });
 
@@ -295,14 +341,15 @@ document.addEventListener("DOMContentLoaded", () => {
       mostrarResultadoParseo(data);
       
       rightTabBtns.forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('#right-panel .tab-pane').forEach(pane => pane.classList.remove('active'));
       traceTabBtn.classList.add('active');
-      document.getElementById('trace-tab').classList.add('active');
+      actionGotoContainer.style.display = 'none';
+      dfaDiagramContainer.style.display = 'none';
+      const traceTab = document.getElementById('trace-tab');
+      if (traceTab) traceTab.style.display = 'block';
+
       
     } catch (error) {
       console.error("Error:", error);
-      updateNotification(`❌ Error: ${error.message}`, "error");
-      autoHideNotification();
     }
   });
 
@@ -372,10 +419,18 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const diagramContent = document.createElement('div');
+    diagramContent.className = 'dfa-diagram-content';
+    diagramContent.style.position = 'relative';
+    diagramContent.style.width = '100%';
+    diagramContent.style.height = '100%';
+    diagramContent.style.minWidth = '7200px';
+    diagramContent.style.minHeight = '72000px';
+    
     const svgLayer = document.createElement('div');
     svgLayer.className = 'dfa-arrows-layer';
     svgLayer.innerHTML = `
-      <svg width="100%" height="100%">
+      <svg width="100%" height="100%" style="position: absolute; top: 0; left: 0;">
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" 
                   refX="9" refY="3.5" orient="auto">
@@ -384,19 +439,18 @@ document.addEventListener("DOMContentLoaded", () => {
         </defs>
       </svg>
     `;
-    diagramContainer.appendChild(svgLayer);
+    diagramContent.appendChild(svgLayer);
     
-    const positions = [
-      {x: 100, y: 100}, {x: 400, y: 100}, {x: 100, y: 300}, 
-      {x: 400, y: 300}, {x: 250, y: 200}, {x: 550, y: 200},
-      {x: 250, y: 400}, {x: 550, y: 400}, {x: 700, y: 250}
-    ];
+    const stateCount = Object.keys(dfaData.states).length;
+    const positions = calculateOptimalPositions(stateCount);
     
     Object.entries(dfaData.states).forEach(([stateId, stateData], index) => {
       const node = document.createElement('div');
       node.className = `dfa-node ${isAcceptState(stateData.items) ? 'accept-state' : ''} ${stateId === '0' ? 'start-state' : ''}`;
-      node.style.left = `${positions[index % positions.length].x}px`;
-      node.style.top = `${positions[index % positions.length].y}px`;
+      node.style.left = `${positions[index].x}px`;
+      node.style.top = `${positions[index].y}px`;
+      node.style.position = 'absolute';
+      node.style.zIndex = '10';
       
       const items = stateData.items || [];
       node.innerHTML = `
@@ -406,63 +460,112 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
       
-      diagramContainer.appendChild(node);
+      diagramContent.appendChild(node);
     });
 
-    drawTransitions(dfaData.transitions, positions);
+    diagramContainer.appendChild(diagramContent);
     
-    const controls = document.createElement('div');
-    controls.className = 'dfa-controls';
-    controls.innerHTML = `
-      <button class="control-btn" onclick="resetDiagram()">Reset</button>
-      <button class="control-btn" onclick="zoomIn()">+</button>
-      <button class="control-btn" onclick="zoomOut()">-</button>
-    `;
-    diagramContainer.appendChild(controls);
-    
-    window.resetDiagram = () => createVisualDFADiagram(dfaData);
-    window.zoomIn = () => console.log("Zoom in");
-    window.zoomOut = () => console.log("Zoom out");
+    setTimeout(() => {
+      drawTransitions(dfaData.transitions, positions);
+    }, 100);
   }
 
-  function isAcceptState(items) {
-    return items.some(item => item.includes('→') && item.includes('•') && item.includes('$'));
+  function calculateOptimalPositions(stateCount) {
+    const positions = [];
+    const horizontalSpacing = 350;
+    const verticalSpacing = 250;
+    
+    const cols = Math.ceil(Math.sqrt(stateCount * 1.5));
+    const rows = Math.ceil(stateCount / cols);
+    
+    const startX = 150;
+    const startY = 100;
+    
+    for (let i = 0; i < stateCount; i++) {
+      const row = Math.floor(i / cols);
+      const col = i % cols;
+      
+      let x = startX + col * horizontalSpacing;
+      let y = startY + row * verticalSpacing;
+      
+      positions.push({
+        x: x,
+        y: y
+      });
+    }
+    
+    return positions;
   }
 
   function drawTransitions(transitions, positions) {
     const svg = document.querySelector('.dfa-arrows-layer svg');
+    if (!svg) return;
+
+    const existingLines = svg.querySelectorAll('line, text');
+    existingLines.forEach(el => el.remove());
     
     transitions.forEach((transition, index) => {
       const fromState = parseInt(transition.from);
       const toState = parseInt(transition.to);
       const label = transition.label;
       
-      const fromPos = positions[fromState % positions.length];
-      const toPos = positions[toState % positions.length];
+      if (!positions[fromState] || !positions[toState]) {
+        console.warn(`Posiciones no encontradas para transición ${fromState} -> ${toState}`);
+        return;
+      }
+      
+      const fromPos = positions[fromState];
+      const toPos = positions[toState];
+      
+      const dx = toPos.x - fromPos.x;
+      const dy = toPos.y - fromPos.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance === 0) return;
+      
+      const nodeRadiusX = 100;
+      const nodeRadiusY = 75;
+      
+      const fromX = fromPos.x + nodeRadiusX + (dx / distance) * nodeRadiusX;
+      const fromY = fromPos.y + nodeRadiusY + (dy / distance) * nodeRadiusY;
+      const toX = toPos.x + nodeRadiusX - (dx / distance) * nodeRadiusX;
+      const toY = toPos.y + nodeRadiusY - (dy / distance) * nodeRadiusY;
       
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', fromPos.x + 100);
-      line.setAttribute('y1', fromPos.y + 50);
-      line.setAttribute('x2', toPos.x + 100);
-      line.setAttribute('y2', toPos.y + 50);
+      line.setAttribute('x1', fromX);
+      line.setAttribute('y1', fromY);
+      line.setAttribute('x2', toX);
+      line.setAttribute('y2', toY);
       line.setAttribute('stroke', '#7b52ab');
       line.setAttribute('stroke-width', '2');
       line.setAttribute('marker-end', 'url(#arrowhead)');
       
       const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      const midX = (fromPos.x + toPos.x) / 2 + 100;
-      const midY = (fromPos.y + toPos.y) / 2 + 50;
+      const midX = (fromX + toX) / 2;
+      const midY = (fromY + toY) / 2;
+      
       text.setAttribute('x', midX);
-      text.setAttribute('y', midY - 10);
+      text.setAttribute('y', midY - 8);
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('fill', '#ec407a');
       text.setAttribute('font-size', '12');
       text.setAttribute('font-weight', 'bold');
+      text.setAttribute('style', 'user-select: none; pointer-events: none;');
+      
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      if (Math.abs(angle) > 45 && Math.abs(angle) < 135) {
+        text.setAttribute('transform', `rotate(${angle} ${midX} ${midY})`);
+      }
+      
       text.textContent = label;
       
       svg.appendChild(line);
       svg.appendChild(text);
     });
+  }
+
+  function isAcceptState(items) {
+    return items.some(item => item.includes('→') && item.includes('•') && item.includes('$'));
   }
 
   function getActionCellClass(action) {

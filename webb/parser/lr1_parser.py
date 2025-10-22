@@ -188,22 +188,20 @@ def generate_dfa_diagram_data(C, augmented_rules, nonterminals, terminals):
             lookahead = it.la
             
             # Crear representación del item
-            item_str = f"{left} → "
+            item_str = f"{left} -> "
             for j, symbol in enumerate(right):
                 if j == dot_pos:
-                    item_str += "• "
+                    item_str += ". "
                 item_str += f"{symbol} "
             if dot_pos == len(right):
-                item_str += "•"
+                item_str += "."
             
             item_str += f", {lookahead}"
             diagram_data["states"][state_id]["items"].append(item_str)
     
-    # Procesar transiciones (versión mejorada)
     for i, state_items in enumerate(C):
         state_id = str(i)
         
-        # Para cada item en el estado
         for it in state_items:
             left = it.left
             right = list(it.right)
@@ -213,9 +211,7 @@ def generate_dfa_diagram_data(C, augmented_rules, nonterminals, terminals):
             if dot_pos < len(right):
                 next_symbol = right[dot_pos]
                 
-                # Buscar el estado que contiene el item con el punto avanzado
                 for j, target_state_items in enumerate(C):
-                    # Verificar si este estado contiene el item con punto avanzado
                     target_item_found = False
                     for target_item in target_state_items:
                         target_left = target_item.left
@@ -228,7 +224,6 @@ def generate_dfa_diagram_data(C, augmented_rules, nonterminals, terminals):
                             target_dot == dot_pos + 1 and
                             target_lookahead == lookahead):
                             
-                            # Verificar si ya existe esta transición
                             transition_exists = any(
                                 t["from"] == state_id and 
                                 t["to"] == str(j) and 

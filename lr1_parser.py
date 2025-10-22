@@ -135,7 +135,7 @@ def first_prod(prod, first, nterminal): #para calulcar los first en produccion e
 
 
 
-def closure(items, regla, nterminal, first): #anade producciones según reglas LR1
+def closure(items, regla, nterminal, first): #añade producciones según reglas LR1
     c = set(items)
     f = True # otro flag por si se agrego algo o no
     while f:
@@ -215,24 +215,7 @@ def action_table_prod(c, regla_au, nterminal, terminal, first, sprima):
                 else:
                     action[idx].setdefault(it.la, ("r",(it.left,it.right))) #reduccion de prod
 
-    conflicts = [] #conflictos en estados de la tabla
-    for st, row in action.items():
-        for t, act in row.items():
-            temp = [] #para ver si hay conflictos en cada uno
-            i = c[st]
-            for it in i:
-                if it.dot <len(it.right) and it.right[it.dot] == t:
-                    temp.append(("d", ))
-                if it.dot == len(it.right) and it.la == t:
-                    temp.append(("r", (it.left, it.right)))
-                if it.left == sprima and it.dot == len(it.right) and t == "$":
-                    temp.append(("acc",))
-            if len(temp) > 1:
-                conflicts.append((st,t,temp))
-        
-    return action, goto_table, conflicts
-
-
+    return action, goto_table
 
 def parser(token, action, goto_table):
     state_stack = [0] #estado
@@ -340,44 +323,8 @@ def format_action(act):
 
 import json
 
-def run_parser_from_text(grammar_text, input_text):
-    # Guardar temporalmente la gramática como archivo
-    with open("input2.txt", "w", encoding="utf-8") as f:
-        f.write(grammar_text.strip() + "\n")
-
-    rules, nonterminals, terminals = grammar("input2.txt")
-    first = first_compute(rules, nonterminals, terminals)
-    C, augmented_rules, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
-    action, goto_table, conflicts = action_table_prod(C, augmented_rules, nonterminals, terminals, first, Sprime)
-
-    # preparar tokens
-    tokens = input_text.strip().split()
-    if not tokens or tokens[-1] != "$":
-        tokens.append("$")
-
-    accepted, trace = parser(tokens, action, goto_table)
-
-    # estructurar salida limpia para el frontend
-    trace_data = []
-    for pila, entrada, accion in trace:
-        trace_data.append({
-            "stack": pila,
-            "input": entrada,
-            "action": accion
-        })
-
-    result = {
-        "result": "accept" if accepted else "reject",
-        "trace": trace_data,
-        "conflicts": conflicts
-    }
-
-    print(json.dumps(result))  # para enviar de vuelta a Node
-
-
-
 def main():
-    grammar_file = "input2.txt" 
+    grammar_file = "inputs/input7.txt" 
     rules, nonterminals, terminals = grammar(grammar_file)
     print("reglas leídas:")
     for r in rules:
@@ -400,10 +347,7 @@ def main():
     print_states(C)
 
     # tablasss
-    action, goto_table, conflicts = action_table_prod(C, augmented_rules, nonterminals, terminals, first, Sprime)
-    print("\nconflictos encontrados (lista):", conflicts)
-
-    print_table(action, goto_table, terminals, nonterminals)
+    action, goto_table = action_table_prod(C, augmented_rules, nonterminals, terminals, first, Sprime)
 
     while True:
         choice = input("\n¿parsear cadena? (s/n): ").strip().lower()

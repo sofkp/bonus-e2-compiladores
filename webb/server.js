@@ -9,15 +9,12 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware - Servir archivos estáticos desde la carpeta public
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Rutas a los scripts Python
 const PARSER_SCRIPT = path.join(__dirname, "parser", "lr1_parse.py");
 const WEB_PARSER_SCRIPT = path.join(__dirname, "parser", "lr1_web.py");
 
-// Endpoint 1: Generar tablas LR(1)
 app.post("/api/generate-tables", (req, res) => {
   const { grammar } = req.body;
 
@@ -67,7 +64,6 @@ app.post("/api/generate-tables", (req, res) => {
   });
 });
 
-// Endpoint 2: Parsear cadena
 app.post("/api/parse-string", (req, res) => {
   const { grammar, input } = req.body;
 
@@ -117,17 +113,14 @@ app.post("/api/parse-string", (req, res) => {
   });
 });
 
-// Servir el archivo HTML principal desde public
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Manejo de errores 404
 app.use((req, res) => {
   res.status(404).json({ error: "Endpoint no encontrado" });
 });
 
-// Manejo de errores global
 app.use((err, req, res, next) => {
   console.error("💥 Error del servidor:", err);
   res.status(500).json({ 
@@ -136,7 +129,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Inicio del servidor
 app.listen(PORT, () => {
   console.log(`🌸 Servidor LR(1) Parser corriendo en http://localhost:${PORT}`);
 });
