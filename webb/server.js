@@ -9,9 +9,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middleware - Servir archivos estáticos desde la carpeta public
 app.use(express.json());
-app.use(express.static(path.join(__dirname))); // Cambiado para servir desde raíz
+app.use(express.static(path.join(__dirname, "public")));
 
 // Rutas a los scripts Python
 const PARSER_SCRIPT = path.join(__dirname, "parser", "lr1_parse.py");
@@ -117,7 +117,7 @@ app.post("/api/parse-string", (req, res) => {
   });
 });
 
-// Servir el archivo HTML principal
+// Servir el archivo HTML principal desde public
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });

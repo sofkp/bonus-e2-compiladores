@@ -8,10 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Header con título -->
   <header id="main-header">
     <h1>🌸 LR(1) Parser</h1>
-    <!-- Popup de notificación -->
     <div id="notification-popup" class="notification-hidden">
       <div class="notification-content">
         <button class="close-btn">×</button>
@@ -21,7 +19,6 @@
   </header>
 
   <div id="main-container">
-    <!-- Panel izquierdo con tabs -->
     <div id="left-panel">
       <div class="tab-container">
         <div class="tab-buttons">
@@ -49,7 +46,6 @@
       </div>
     </div>
 
-    <!-- Panel derecho con tabs -->
     <div id="right-panel">
       <div class="tab-container">
         <div class="tab-buttons">
@@ -59,26 +55,24 @@
         
         <div class="tab-content">
           <div id="tables-tab" class="tab-pane active">
-            <div class="view-toggle">
-              <button class="toggle-btn active" data-view="table">Tabla</button>
-              <button class="toggle-btn" data-view="diagram">Diagrama DFA</button>
+            <div class="view-toggle-container">
+              <div class="view-toggle">
+                <button class="toggle-btn active" data-view="table">Tabla</button>
+                <button class="toggle-btn" data-view="diagram">Diagrama DFA</button>
+              </div>
             </div>
             
             <div id="action-goto-container" class="table-container">
               <div class="table-title">ACTION & GOTO TABLE</div>
-              <div id="combined-table-wrapper">
+              <div id="combined-table-wrapper" class="scrollable-content">
                 <table id="combined-table" class="lr-table"></table>
               </div>
             </div>
             
             <div id="dfa-diagram-container" class="diagram-container" style="display: none;">
               <div class="table-title">DIAGRAMA DFA LR(1)</div>
-              <div id="dfa-diagram-wrapper">
-                <div id="dfa-diagram" class="dfa-diagram">
-                  <p style="text-align: center; color: #7b52ab; padding: 40px;">
-                    Genera las tablas LR(1) para ver el diagrama DFA aquí 🌸
-                  </p>
-                </div>
+              <div id="dfa-diagram-wrapper" class="scrollable-content">
+                <div id="dfa-diagram" class="dfa-diagram"></div>
               </div>
             </div>
           </div>
@@ -86,7 +80,7 @@
           <div id="trace-tab" class="tab-pane">
             <div id="trace-container" class="table-container">
               <div class="table-title">TRACE</div>
-              <div id="trace-table-wrapper">
+              <div id="trace-table-wrapper" class="scrollable-content">
                 <table id="current-trace-table" class="trace-table"></table>
               </div>
               <div class="trace-navigation">
