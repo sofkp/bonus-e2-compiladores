@@ -1,6 +1,6 @@
 P -> SList
 SList -> SList S | S
-S -> id = E ;| if ( B ) S | if ( B ) S else S | while ( B ) S | { SList }
+S -> id = E ; | if ( B ) S | if ( B ) S else S | while ( B ) S | { SList }
 E -> E + T | E - T | T
 T -> T * F | T / F | F
 F -> ( E ) | id | num
@@ -8,3 +8,16 @@ B -> B or C | C
 C -> C and D | D
 D -> E relop E
 relop -> < | > | <= | >= | == | !=
+
+{ id = num + num * ( id - num ) ; if ( id >= num and id != num ) { id = id + num ; } else { while ( id < num ) { id = id + num ; } } }
+{ 
+    id = num + num * ( id - num ) ; 
+    if ( id >= num and id != num ) { 
+        id = id + num ; 
+    } 
+    else { 
+        while ( id < num ) { 
+            id = id + num ; 
+        } 
+    }
+}

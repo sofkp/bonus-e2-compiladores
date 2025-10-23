@@ -424,8 +424,8 @@ document.addEventListener("DOMContentLoaded", () => {
     diagramContent.style.position = 'relative';
     diagramContent.style.width = '100%';
     diagramContent.style.height = '100%';
-    diagramContent.style.minWidth = '7200px';
-    diagramContent.style.minHeight = '72000px';
+    diagramContent.style.minWidth = '5000px';
+    diagramContent.style.minHeight = '3000px';
     
     const svgLayer = document.createElement('div');
     svgLayer.className = 'dfa-arrows-layer';

@@ -1,15 +1,7 @@
 from collections import defaultdict
 import pprint
 
-class lr1:
-    def __init__(self,grammar):
-        self.grammar = grammar #gramatica scaneada 
-        self.first = {} #diccionario para los FIRST
-        self.states = [] #estados del LR(1)
-        self.action_table = {} # [state][terminal-no terminal] = acción/regla
-        self.got_to = {} #[state][no terminal] = estado destino
-
-class item:
+class prod:
     def __init__(self, left, right, dot, lookahead):
         self.left = left
         self.right = tuple(right)
@@ -135,13 +127,13 @@ def first_prod(prod, first, nterminal): #para calulcar los first en produccion e
 
 
 
-def closure(items, regla, nterminal, first): #añade producciones según reglas LR1
-    c = set(items)
+def prod_estado(prods, regla, nterminal, first): #añade producciones al estado actual según reglas LR1
+    c = set(prods)
     f = True # otro flag por si se agrego algo o no
     while f:
         f = False
-        ilist = list(c) #lista de items
-        for it in ilist: #por cada item en el closure
+        ilist = list(c) #lista de producciones
+        for it in ilist: #por cada produccion en el closure
             if it.dot < len(it.right): #A -> x · X b, a
                 x = it.right[it.dot] 
                 if x in nterminal: #si . antes de un no terminal, para cada prod de b se repiten con el first como look ahead
@@ -152,68 +144,68 @@ def closure(items, regla, nterminal, first): #añade producciones según reglas 
                     for(left, right) in regla: #por cada produccion de X, copiar con nuevo looahead 
                         if left == x:
                             for a in lookaheads:
-                                new_item = item(x, right, 0, a)
-                                if new_item not in c:
-                                    c.add(new_item)
+                                new_prod = prod(x, right, 0, a)
+                                if new_prod not in c:
+                                    c.add(new_prod)
                                     f = True
     return c                        
 
-def goto(items, x, regla, nterminal,first): #movimiento de estados de A -> α · X β, a => A -> α X · β, a
+def desplazamiento(prods, x, regla, nterminal,first): #a donde se desplaza de estados A -> α · X β, a => A -> α X · β, a
     moved = set()
-    for it in items:
+    for it in prods:
         if it.dot < len(it.right) and it.right[it.dot] == x:
-            moved.add(item(it.left,it.right,it.dot+1,it.la))
-    return closure(moved,regla,nterminal,first)
+            moved.add(prods(it.left,it.right,it.dot+1,it.la))
+    return prod_estado(moved,regla,nterminal,first)
 
 
 def dfa(regla, nterminal, terminal, first, symb): #colección canónica de estados
     sprima = symb + "'" #S' -> simbolo de entrada
     regla_au = [(sprima, [symb])] + regla #reglas aumentadas 
-    s_i = item(sprima, [symb], 0, "$") #start item
-    c = [] #closure
-    c0 = closure({s_i}, regla_au, nterminal + [sprima], first)
-    c.append(c0)
+    s0 = prod(sprima, [symb], 0, "$") #primera producción S'->.S, $
+    estados = [] #closure
+    e0 = prod_estado({s0}, regla_au, nterminal + [sprima], first)
+    estados.append(e0)
     changed = True
     while changed:
         changed = False
-        for i in list(c):
+        for i in list(estados):
             for x in nterminal + terminal:
-                j = goto(i,x,regla_au,nterminal + [sprima], first)
+                j = desplazamiento(i,x,regla_au,nterminal + [sprima], first)
                 if not j:
                     continue
                 if all(frozenset(j) != frozenset(existing) for existing in c):
-                    c.append(j)
+                    estados.append(j)
                     changed = True
 
-    return c, regla_au, sprima
+    return estados, regla_au, sprima
 
 
-def action_table_prod(c, regla_au, nterminal, terminal, first, sprima):
+def action_table_prod(estados, regla_au, nterminal, terminal, first, sprima):
     action = defaultdict(dict) #action[estado][[terminal-no terminal] = reducción o desplazamiento
     goto_table = defaultdict(dict) #goto[estado][noterminal] = estado
-    state_of = {frozenset(st):idx for idx, st in enumerate(c)}
-    for idx, i in enumerate(c):
+    state_of = {frozenset(st):prods for prods, st in enumerate(c)}
+    for prods, i in enumerate(estados): #numero de producciones
         for a in terminal: #desplazamientos a estados
-            j = goto(i, a, regla_au, nterminal + [sprima], first)
+            j = desplazamiento(i, a, regla_au, nterminal + [sprima], first)
             if j:
                 j = state_of.get(frozenset(j))
                 if j is not None:
-                    action[idx][a] = ("d", j) #desplaza del estado idx a j en a
+                    action[prods][a] = ("d", j) #desplaza del estado de prods a j usando a 
     
-        for b in nterminal: #gotos de no terminales
-            j = goto(i, b, regla_au, nterminal + [sprima], first)
+        for b in nterminal: #desplzamiento de no terminales
+            j = desplazamiento(i, b, regla_au, nterminal + [sprima], first)
             if j:
                 j = state_of.get(frozenset(j))
                 if j is not None:
-                    goto_table[idx][b] = j
+                    goto_table[prods][b] = j
 
         for it in i:
             if it.dot == len(it.right):
                 if it.left == sprima and it.la == "$":
-                    action[idx]["$"] = ("acc", ) #cuando llega a S'-> start, acepta
+                    action[prods]["$"] = ("acc", ) #cuando llega a S'-> start, acepta
 
                 else:
-                    action[idx].setdefault(it.la, ("r",(it.left,it.right))) #reduccion de prod
+                    action[prods].setdefault(it.la, ("r",(it.left,it.right))) #reduccion de prod
 
     return action, goto_table
 
@@ -324,7 +316,7 @@ def format_action(act):
 import json
 
 def main():
-    grammar_file = "inputs/input7.txt" 
+    grammar_file = "inputs/input1.txt" 
     rules, nonterminals, terminals = grammar(grammar_file)
     print("reglas leídas:")
     for r in rules:
@@ -342,12 +334,14 @@ def main():
 
 
     # DFA
-    C, augmented_rules, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
+    estados, reglas_au, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
     print("\nDFA: ")
-    print_states(C)
+    print_states(estados)
 
     # tablasss
-    action, goto_table = action_table_prod(C, augmented_rules, nonterminals, terminals, first, Sprime)
+    action, goto_table = action_table_prod(estados, reglas_au, nonterminals, terminals, first, Sprime)
+    print_table(goto_table)
+    print_table(action)
 
     while True:
         choice = input("\n¿parsear cadena? (s/n): ").strip().lower()
