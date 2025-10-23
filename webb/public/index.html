@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> 🌸 LR(1) Parser</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header id="main-header">
+    <h1>🌸 LR(1) Parser</h1>
+    <div id="notification-popup" class="notification-hidden">
+      <div class="notification-content">
+        <button class="close-btn">×</button>
+        <p id="popup-message">Esperando acción... 🌸</p>
+      </div>
+    </div>
+  </header>
+
+  <div id="main-container">
+    <div id="left-panel">
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-tab="grammar">Gramática</button>
+          <button class="tab-btn" data-tab="parse" id="parse-tab-btn" style="display: none;">Parsear Cadena</button>
+        </div>
+        
+        <div class="tab-content">
+          <div id="grammar-tab" class="tab-pane active">
+            <div class="section">
+              <h2>Ingresa tu gramática LR(1)</h2>
+              <textarea id="grammarInput" placeholder="E -> E + T | T&#10;T -> T * F | F&#10;F -> ( E ) | id"></textarea>
+            </div>
+            <button id="btnGenerarTablas">Generar Tablas LR(1)</button>
+          </div>
+          
+          <div id="parse-tab" class="tab-pane">
+            <div class="section">
+              <h2>Cadena a analizar</h2>
+              <textarea id="inputCadena" placeholder="id + id * id"></textarea>
+            </div>
+            <button id="btnParsear">Parsear Cadena</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="right-panel">
+      <div class="scrollable-contentt">
+            <div id="content-wrapper" data-tab="tables">
+              
+              <div id="action-goto-container" class="table-container">
+                <div class="table-title">ACTION & GOTO TABLE
+                  <div class="view-toggle">
+                  <input type="checkbox" id="viewSwitch" class="view-switch" />
+                    <label for="viewSwitch" class="switch-label">
+                      <span class="switch-inner"></span>
+                      <span class="switch-handle"></span>
+                    </label>
+                    <span class="switch-text">
+                      <span class="table-label">Tabla</span>
+                      <span class="diagram-label">DFA</span>
+                    </span>
+                  </div>
+                </div>
+                  <table id="combined-table" class="lr-table"></table>
+              </div>
+              
+              <div id="dfa-diagram-container" class="diagram-container" style="display: none;">
+                <div class="table-title">DIAGRAMA DFA LR(1)
+                  <div class="view-toggle">
+                  <input type="checkbox" id="viewSwitch" class="view-switch" />
+                    <label for="viewSwitch" class="switch-label">
+                      <span class="switch-inner"></span>
+                      <span class="switch-handle"></span>
+                    </label>
+                    <span class="switch-text">
+                      <span class="table-label">Tabla</span>
+                      <span class="diagram-label">DFA</span>
+                    </span>
+                  </div>
+                </div>
+                <div id="dfa-diagram" class="dfa-diagram"></div>
+              </div>
+
+              
+              <div id="trace-container" class="table-container">
+                  <div class="table-title">TRACE</div>
+                  <table id="current-trace-table" class="trace-table"></table>
+                  <div class="trace-navigation">
+                      <button id="prev-trace" class="nav-btn">‹</button>
+                    <span id="trace-counter">1/1</span>
+                    <button id="next-trace" class="nav-btn">›</button>
+                  </div>
+              </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
