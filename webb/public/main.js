@@ -425,7 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
     diagramContent.style.width = '100%';
     diagramContent.style.height = '100%';
     diagramContent.style.minWidth = '5000px';
-    diagramContent.style.minHeight = '3000px';
+    diagramContent.style.minHeight = '1000px';
     
     const svgLayer = document.createElement('div');
     svgLayer.className = 'dfa-arrows-layer';
@@ -446,17 +446,17 @@ document.addEventListener("DOMContentLoaded", () => {
     
     Object.entries(dfaData.states).forEach(([stateId, stateData], index) => {
       const node = document.createElement('div');
-      node.className = `dfa-node ${isAcceptState(stateData.items) ? 'accept-state' : ''} ${stateId === '0' ? 'start-state' : ''}`;
+      node.className = `dfa-node`;
       node.style.left = `${positions[index].x}px`;
       node.style.top = `${positions[index].y}px`;
       node.style.position = 'absolute';
       node.style.zIndex = '10';
       
-      const items = stateData.items || [];
+      const prods = stateData.prods || [];
       node.innerHTML = `
         <div class="node-header">Estado ${stateId}</div>
         <div class="node-content">
-          ${items.map(item => `<div class="node-item">${item}</div>`).join('')}
+          ${prods.map(item => `<div class="node-item">${item}</div>`).join('')}
         </div>
       `;
       
@@ -564,9 +564,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function isAcceptState(items) {
-    return items.some(item => item.includes('→') && item.includes('•') && item.includes('$'));
+  function isAcceptState(state) {
+    const prods = state.prods || [];
+    return prods.some(item => item.includes('->') && item.includes('.') && item.includes('$'));
   }
+
 
   function getActionCellClass(action) {
     if (!action) return '';

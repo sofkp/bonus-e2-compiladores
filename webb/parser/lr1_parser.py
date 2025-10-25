@@ -127,13 +127,13 @@ def first_prod(prod, first, nterminal): #para calulcar los first en produccion e
 
 
 
-def prod_estado(prods, regla, nterminal, first): #añade producciones al estado actual según reglas LR1
+def prod_estado(prods, regla, nterminal, first): #anade producciones según reglas LR1
     c = set(prods)
     f = True # otro flag por si se agrego algo o no
     while f:
         f = False
-        ilist = list(c) #lista de producciones
-        for it in ilist: #por cada produccion en el closure
+        ilist = list(c) #lista de prods
+        for it in ilist: #por cada producción en el estado
             if it.dot < len(it.right): #A -> x · X b, a
                 x = it.right[it.dot] 
                 if x in nterminal: #si . antes de un no terminal, para cada prod de b se repiten con el first como look ahead
@@ -150,19 +150,100 @@ def prod_estado(prods, regla, nterminal, first): #añade producciones al estado 
                                     f = True
     return c                        
 
-def desplazamiento(prods, x, regla, nterminal,first): #a donde se desplaza de estados A -> α · X β, a => A -> α X · β, a
+def desplazamiento(prods, x, regla, nterminal,first): #movimiento de estados de A -> α · X β, a => A -> α X · β, a
     moved = set()
     for it in prods:
         if it.dot < len(it.right) and it.right[it.dot] == x:
-            moved.add(prods(it.left,it.right,it.dot+1,it.la))
+            moved.add(prod(it.left,it.right,it.dot+1,it.la))
     return prod_estado(moved,regla,nterminal,first)
 
+def generate_dfa_diagram_data(estados):
+    """Genera datos para el diagrama DFA LR(1)"""
+    diagram_data = {
+        "states": {},
+        "transitions": []
+    }
+    
+    # Procesar cada estado
+    for i, state_prods in enumerate(estados):
+        state_id = str(i)
+        diagram_data["states"][state_id] = {
+            "id": state_id,
+            "prods": []
+        }
+        
+        # Convertir prods a formato legible - USAR ATRIBUTOS DEL OBJETO prod
+        for it in state_prods:
+            left = it.left
+            right = list(it.right)
+            dot_pos = it.dot
+            lookahead = it.la
+            
+            # Crear representación del prod
+            prod_str = f"{left} -> "
+            for j, symbol in enumerate(right):
+                if j == dot_pos:
+                    prod_str += ". "
+                prod_str += f"{symbol} "
+            if dot_pos == len(right):
+                prod_str += "."
+            
+            prod_str += f", {lookahead}"
+            diagram_data["states"][state_id]["prods"].append(prod_str)
+    
+    for i, state_prods in enumerate(estados):
+        state_id = str(i)
+        
+        for it in state_prods:
+            left = it.left
+            right = list(it.right)
+            dot_pos = it.dot
+            lookahead = it.la
+            
+            if dot_pos < len(right):
+                next_symbol = right[dot_pos]
+                
+                for j, target_state_prods in enumerate(estados):
+                    target_prod_found = False
+                    for target_prod in target_state_prods:
+                        target_left = target_prod.left
+                        target_right = list(target_prod.right)
+                        target_dot = target_prod.dot
+                        target_lookahead = target_prod.la
+                        
+                        if (target_left == left and 
+                            target_right == right and 
+                            target_dot == dot_pos + 1 and
+                            target_lookahead == lookahead):
+                            
+                            transition_exists = any(
+                                t["from"] == state_id and 
+                                t["to"] == str(j) and 
+                                t["label"] == next_symbol 
+                                for t in diagram_data["transitions"]
+                            )
+                            
+                            if not transition_exists:
+                                diagram_data["transitions"].append({
+                                    "from": state_id,
+                                    "to": str(j),
+                                    "label": next_symbol
+                                })
+                            target_prod_found = True
+                            break
+                    
+                    if target_prod_found:
+                        break
+    
+    return diagram_data
+
+dfa_diagram_data = None
 
 def dfa(regla, nterminal, terminal, first, symb): #colección canónica de estados
     sprima = symb + "'" #S' -> simbolo de entrada
     regla_au = [(sprima, [symb])] + regla #reglas aumentadas 
-    s0 = prod(sprima, [symb], 0, "$") #primera producción S'->.S, $
-    estados = [] #closure
+    s0 = prod(sprima, [symb], 0, "$") #start prod
+    estados = [] #prod_estado
     e0 = prod_estado({s0}, regla_au, nterminal + [sprima], first)
     estados.append(e0)
     changed = True
@@ -173,26 +254,29 @@ def dfa(regla, nterminal, terminal, first, symb): #colección canónica de estad
                 j = desplazamiento(i,x,regla_au,nterminal + [sprima], first)
                 if not j:
                     continue
-                if all(frozenset(j) != frozenset(existing) for existing in c):
+                if all(frozenset(j) != frozenset(existing) for existing in estados):
                     estados.append(j)
                     changed = True
 
-    return estados, regla_au, sprima
+    global dfa_diagram_data
+    dfa_diagram_data = generate_dfa_diagram_data(estados)
+    
+    return estados, regla_au, sprima 
 
 
 def action_table_prod(estados, regla_au, nterminal, terminal, first, sprima):
     action = defaultdict(dict) #action[estado][[terminal-no terminal] = reducción o desplazamiento
     goto_table = defaultdict(dict) #goto[estado][noterminal] = estado
-    state_of = {frozenset(st):prods for prods, st in enumerate(c)}
+    state_of = {frozenset(st):idx for idx, st in enumerate(estados)}
     for prods, i in enumerate(estados): #numero de producciones
         for a in terminal: #desplazamientos a estados
             j = desplazamiento(i, a, regla_au, nterminal + [sprima], first)
             if j:
                 j = state_of.get(frozenset(j))
                 if j is not None:
-                    action[prods][a] = ("d", j) #desplaza del estado de prods a j usando a 
+                    action[prods][a] = ("d", j) #desplaza del estado idx a j en a
     
-        for b in nterminal: #desplzamiento de no terminales
+        for b in nterminal: #desplazamiento de no terminales
             j = desplazamiento(i, b, regla_au, nterminal + [sprima], first)
             if j:
                 j = state_of.get(frozenset(j))
@@ -208,6 +292,8 @@ def action_table_prod(estados, regla_au, nterminal, terminal, first, sprima):
                     action[prods].setdefault(it.la, ("r",(it.left,it.right))) #reduccion de prod
 
     return action, goto_table
+
+
 
 def parser(token, action, goto_table):
     state_stack = [0] #estado
@@ -315,8 +401,47 @@ def format_action(act):
 
 import json
 
+def run_parser_from_text(grammar_text, input_text):
+    # Guardar temporalmente la gramática como archivo
+    with open("input2.txt", "w", encoding="utf-8") as f:
+        f.write(grammar_text.strip() + "\n")
+
+    rules, nonterminals, terminals = grammar("input2.txt")
+    first = first_compute(rules, nonterminals, terminals)
+    estados, augmented_rules, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
+    action, goto_table, conflicts = action_table_prod(estados, augmented_rules, nonterminals, terminals, first, Sprime)
+
+    # preparar tokens
+    tokens = input_text.strip().split()
+    if not tokens or tokens[-1] != "$":
+        tokens.append("$")
+
+    accepted, trace = parser(tokens, action, goto_table)
+
+    # estructurar salida limpia para el frontend
+    trace_data = []
+    for pila, entrada, accion in trace:
+        trace_data.append({
+            "stack": pila,
+            "input": entrada,
+            "action": accion
+        })
+
+    result = {
+        "result": "accept" if accepted else "reject",
+        "trace": trace_data,
+        "conflicts": conflicts
+    }
+
+    print(json.dumps(result))  # para enviar de vuelta a Node
+
+def get_dfa_data():
+    """Obtiene los datos del diagrama DFA"""
+    global dfa_diagram_data
+    return dfa_diagram_data if 'dfa_diagram_data' in globals() else None
+
 def main():
-    grammar_file = "inputs/input1.txt" 
+    grammar_file = "input2.txt" 
     rules, nonterminals, terminals = grammar(grammar_file)
     print("reglas leídas:")
     for r in rules:
@@ -334,14 +459,15 @@ def main():
 
 
     # DFA
-    estados, reglas_au, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
+    C, augmented_rules, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
     print("\nDFA: ")
-    print_states(estados)
+    print_states(C)
 
     # tablasss
-    action, goto_table = action_table_prod(estados, reglas_au, nonterminals, terminals, first, Sprime)
-    print_table(goto_table)
-    print_table(action)
+    action, goto_table, conflicts = action_table_prod(C, augmented_rules, nonterminals, terminals, first, Sprime)
+    print("\nconflictos encontrados (lista):", conflicts)
+
+    print_table(action, goto_table, terminals, nonterminals)
 
     while True:
         choice = input("\n¿parsear cadena? (s/n): ").strip().lower()

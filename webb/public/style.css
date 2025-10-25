@@ -568,8 +568,8 @@ button {
 }
 
 .dfa-node.accept-state {
-  border-color: #1b5e20;
-  background: linear-gradient(135deg, #e8f5e8, #ffffff);
+  border-color: #7b52ab;
+  background: linear-gradient(135deg, #f3e0fa, #ffffff);
 }
 
 .dfa-node.start-state {
@@ -587,16 +587,6 @@ button {
   color: #7b52ab;
   border-bottom: 2px solid #d2a9e3;
   font-size: 12px;
-}
-
-.accept-state .node-header {
-  background: linear-gradient(135deg, #d5f5e3, #a5d6a7);
-  color: #1b5e20;
-}
-
-.start-state .node-header {
-  background: linear-gradient(135deg, #7b52ab, #9c67c5);
-  color: white;
 }
 
 .node-content {

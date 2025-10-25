@@ -12,8 +12,8 @@ def generate_tables(grammar_text):
         
         rules, nonterminals, terminals = grammar("temp_grammar.txt")
         first = first_compute(rules, nonterminals, terminals)
-        C, augmented_rules, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
-        action, goto_table, conflicts = action_table_prod(C, augmented_rules, nonterminals, terminals, first, Sprime)
+        estados, augmented_rules, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
+        action, goto_table = action_table_prod(estados, augmented_rules, nonterminals, terminals, first, Sprime)
         
         # Obtener datos del DFA
         dfa_data = get_dfa_data()
@@ -64,8 +64,8 @@ def parse_string(grammar_text, input_string):
         
         rules, nonterminals, terminals = grammar("temp_grammar.txt")
         first = first_compute(rules, nonterminals, terminals)
-        C, augmented_rules, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
-        action, goto_table, conflicts = action_table_prod(C, augmented_rules, nonterminals, terminals, first, Sprime)
+        estados, augmented_rules, Sprime = dfa(rules, nonterminals, terminals, first, nonterminals[0])
+        action, goto_table = action_table_prod(estados, augmented_rules, nonterminals, terminals, first, Sprime)
         
         # Preparar tokens
         tokens = input_string.strip().split()
